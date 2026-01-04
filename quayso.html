@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Đếm số - Đã qua / Chưa qua</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin: 0; background: #f6f7fb; color: #111; }
+    .wrap { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.06); padding: 16px; }
+    .grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    input, button, select {
+      padding: 10px 12px; border-radius: 10px; border: 1px solid #d7dbe7; background: #fff;
+      font-size: 14px;
+    }
+    button { cursor: pointer; border: 0; background: #111; color: #fff; }
+    button.secondary { background: #4b5563; }
+    button.good { background: #16a34a; }
+    button.bad { background: #dc2626; }
+    button.ghost { background: #fff; color: #111; border: 1px solid #d7dbe7; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .big {
+      display: grid; place-items: center; padding: 14px;
+      border-radius: 14px; background: #0b1220; color: #fff;
+      min-height: 170px;
+    }
+    .num { font-size: 64px; font-weight: 800; letter-spacing: 1px; }
+    .sub { opacity: .8; margin-top: 6px; font-size: 13px; }
+    .pill { display:inline-flex; gap: 8px; align-items:center; padding: 8px 10px; border-radius: 999px; background:#eef2ff; color:#1e3a8a; font-size: 13px; }
+    .lists { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px){ .lists{ grid-template-columns: 1fr; } }
+    .list { border:1px solid #e7e9f2; border-radius: 12px; overflow:hidden; }
+    .list h2 { margin:0; padding:10px 12px; font-size: 14px; background:#fafbff; border-bottom:1px solid #e7e9f2; }
+    .list .body { padding: 10px 12px; max-height: 260px; overflow:auto; font-size: 13px; }
+    .muted { color:#6b7280; font-size: 12px; }
+    .log-item { padding: 6px 0; border-bottom: 1px dashed #eceef6; }
+    .log-item:last-child{ border-bottom:0; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; padding:2px 6px; border:1px solid #d7dbe7; border-bottom-width:2px; border-radius:6px; background:#fff; }
+    .danger { color:#b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Web đếm số: Đã qua / Chưa qua (giữ số chưa qua trong vòng quay)</h1>
+
+      <div class="row" style="justify-content: space-between;">
+        <div class="row">
+          <span class="pill">💾 Tự lưu dữ liệu (refresh vẫn còn)</span>
+          <span class="pill">🔁 Chưa qua → đưa về cuối hàng đợi</span>
+        </div>
+        <div class="row">
+          <button class="ghost" id="btnExport">Export CSV</button>
+          <button class="ghost" id="btnClearAll" title="Xóa toàn bộ dữ liệu và reset">Reset</button>
+        </div>
+      </div>
+
+      <hr style="border:0;border-top:1px solid #e7e9f2;margin:14px 0;" />
+
+      <div class="grid">
+        <!-- Left: Current number and actions -->
+        <div>
+          <div class="big">
+            <div style="text-align:center;">
+              <div class="num" id="currentNum">—</div>
+              <div class="sub" id="currentMeta">Chưa có danh sách. Hãy tạo danh sách bên phải.</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="secondary" id="btnNext" title="Phím tắt: Space">Next (Space)</button>
+            <button class="good" id="btnPass" disabled title="Phím tắt: Enter">Đã qua (Enter)</button>
+            <button class="bad" id="btnFail" disabled title="Phím tắt: F">Chưa qua (F)</button>
+            <button class="ghost" id="btnUndo" disabled title="Hoàn tác 1 bước">Undo</button>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <label class="row" style="gap:8px;">
+              <input type="checkbox" id="autoRun" />
+              <span>Tự chạy</span>
+            </label>
+
+            <label class="row" style="gap:8px;">
+              <span class="muted">Mỗi</span>
+              <input type="number" id="autoMs" min="300" step="100" value="1500" style="width:120px;" />
+              <span class="muted">ms</span>
+            </label>
+
+            <span class="muted">Phím tắt: <span class="kbd">Space</span> Next, <span class="kbd">Enter</span> Đã qua, <span class="kbd">F</span> Chưa qua</span>
+          </div>
+
+          <div class="lists" style="margin-top:14px;">
+            <div class="list">
+              <h2>📌 Hàng đợi (sắp gọi)</h2>
+              <div class="body" id="queueView"></div>
+            </div>
+            <div class="list">
+              <h2>🟠 Chưa qua (đang giữ trong vòng quay)</h2>
+              <div class="body" id="failsView"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Setup -->
+        <div>
+          <div class="list">
+            <h2>⚙️ Tạo / sửa danh sách</h2>
+            <div class="body">
+              <div class="row">
+                <label>
+                  <div class="muted">Từ số</div>
+                  <input type="number" id="startNum" value="1" />
+                </label>
+                <label>
+                  <div class="muted">Đến số</div>
+                  <input type="number" id="endNum" value="50" />
+                </label>
+                <button id="btnBuild">Tạo danh sách</button>
+              </div>
+
+              <div style="margin:12px 0 6px;" class="muted">Hoặc nhập danh sách tùy ý (mỗi dòng 1 số / mã):</div>
+              <textarea id="customList" rows="6" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d7dbe7; resize:vertical;"
+                placeholder="Ví dụ:
+A01
+A02
+A03"></textarea>
+
+              <div class="row" style="margin-top:10px;">
+                <button class="secondary" id="btnUseCustom">Dùng danh sách tùy ý</button>
+                <button class="ghost" id="btnShuffle" title="Trộn thứ tự">Trộn</button>
+              </div>
+
+              <div style="margin-top:14px;" class="muted">
+                Gợi ý: nếu muốn “chưa qua” được gọi lại sớm hơn, bạn có thể sửa code để đưa lên đầu thay vì cuối.
+              </div>
+
+              <hr style="border:0;border-top:1px solid #e7e9f2;margin:14px 0;" />
+
+              <div class="list">
+                <h2>🧾 Nhật ký (log)</h2>
+                <div class="body" id="logView" style="max-height:240px;"></div>
+              </div>
+
+              <div class="muted" style="margin-top:10px;">
+                Quy tắc:
+                <ul style="margin:6px 0 0 18px;">
+                  <li><b>Đã qua</b>: số được ghi nhận và loại khỏi vòng quay.</li>
+                  <li><b>Chưa qua</b>: số được ghi nhận và đưa về <b>cuối hàng đợi</b> để gọi lại.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="muted" style="margin-top:10px;">
+            Nếu bạn muốn thêm: nhiều “bàn/line”, phân quyền người bấm, hoặc đồng bộ nhiều máy → mình có thể nâng cấp lên bản dùng Firebase / Supabase.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const LS_KEY = "auto_counter_pass_fail_v1";
+
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    queue: [],            // items to be called
+    current: null,        // current item shown
+    passed: [],           // {item, at}
+    failed: [],           // {item, at, attempts}
+    attempts: {},         // item -> attempts count
+    log: [],              // {at, action, item, note}
+    history: [],          // stack for undo snapshots
+    autoTimer: null
+  };
+
+  function nowStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
+  function save() {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+
+  function load() {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    try {
+      const obj = JSON.parse(raw);
+      Object.assign(state, obj);
+    } catch {}
+  }
+
+  function pushHistory() {
+    // shallow snapshot (good enough)
+    state.history.push(JSON.stringify({
+      queue: state.queue,
+      current: state.current,
+      passed: state.passed,
+      failed: state.failed,
+      attempts: state.attempts,
+      log: state.log
+    }));
+    if (state.history.length > 30) state.history.shift();
+    $("btnUndo").disabled = state.history.length === 0;
+  }
+
+  function undo() {
+    const snap = state.history.pop();
+    if (!snap) return;
+    const obj = JSON.parse(snap);
+    state.queue = obj.queue;
+    state.current = obj.current;
+    state.passed = obj.passed;
+    state.failed = obj.failed;
+    state.attempts = obj.attempts;
+    state.log = obj.log;
+    $("btnUndo").disabled = state.history.length === 0;
+    save();
+    render();
+  }
+
+  function addLog(action, item, note="") {
+    state.log.unshift({ at: nowStr(), action, item, note });
+    if (state.log.length > 200) state.log.pop();
+  }
+
+  function normalizeItem(x) {
+    return String(x).trim();
+  }
+
+  function buildRange(start, end) {
+    const s = Number(start), e = Number(end);
+    if (!Number.isFinite(s) || !Number.isFinite(e) || e < s) return [];
+    const arr = [];
+    for (let i = s; i <= e; i++) arr.push(String(i));
+    return arr;
+  }
+
+  function useList(list) {
+    pushHistory();
+    state.queue = list.slice();
+    state.current = null;
+    state.passed = [];
+    state.failed = [];
+    state.attempts = {};
+    state.log = [];
+    addLog("INIT", "-", `Tạo danh sách (${list.length} mục)`);
+    save();
+    render();
+  }
+
+  function shuffle() {
+    if (state.queue.length < 2) return;
+    pushHistory();
+    for (let i = state.queue.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [state.queue[i], state.queue[j]] = [state.queue[j], state.queue[i]];
+    }
+    addLog("SHUFFLE", "-", "Trộn hàng đợi");
+    save();
+    render();
+  }
+
+  function ensureButtons() {
+    const hasAny = state.current !== null;
+    $("btnPass").disabled = !hasAny;
+    $("btnFail").disabled = !hasAny;
+    $("btnNext").disabled = state.queue.length === 0 && state.current !== null; // allow next if current null
+  }
+
+  function next() {
+    if (state.queue.length === 0) {
+      // nếu current còn thì không có gì để next; nếu current null thì cũng vậy
+      return;
+    }
+    pushHistory();
+    state.current = state.queue.shift();
+    addLog("CALL", state.current, "Gọi số");
+    save();
+    render();
+  }
+
+  function pass() {
+    if (state.current === null) return;
+    pushHistory();
+    state.passed.unshift({ item: state.current, at: nowStr() });
+    addLog("PASS", state.current, "Đã qua");
+    state.current = null;
+    save();
+    render();
+  }
+
+  function fail() {
+    if (state.current === null) return;
+    pushHistory();
+    const item = state.current;
+    state.attempts[item] = (state.attempts[item] || 0) + 1;
+
+    // đưa về cuối hàng đợi để giữ trong vòng quay
+    state.queue.push(item);
+
+    // cập nhật danh sách failed hiển thị attempts (chỉ 1 record / item, cập nhật attempts)
+    const idx = state.failed.findIndex(x => x.item === item);
+    const rec = { item, at: nowStr(), attempts: state.attempts[item] };
+    if (idx >= 0) state.failed[idx] = rec;
+    else state.failed.unshift(rec);
+
+    addLog("FAIL", item, `Chưa qua (lần ${state.attempts[item]}) → đưa về cuối`);
+    state.current = null;
+    save();
+    render();
+  }
+
+  function renderQueue() {
+    const q = state.queue.slice(0, 200);
+    if (q.length === 0) {
+      $("queueView").innerHTML = `<div class="muted">Hàng đợi trống.</div>`;
+      return;
+    }
+    const html = q.map((x, i) => `<div class="log-item"><b>${i+1}.</b> ${escapeHtml(x)}</div>`).join("");
+    const more = state.queue.length > q.length ? `<div class="muted">… và còn ${state.queue.length - q.length} mục nữa</div>` : "";
+    $("queueView").innerHTML = html + more;
+  }
+
+  function renderFails() {
+    const f = state.failed.slice(0, 200);
+    if (f.length === 0) {
+      $("failsView").innerHTML = `<div class="muted">Chưa có số “Chưa qua”.</div>`;
+      return;
+    }
+    const html = f.map((x) => (
+      `<div class="log-item">
+        <b>${escapeHtml(x.item)}</b>
+        <div class="muted">Lần chưa qua: ${x.attempts} • Lúc: ${escapeHtml(x.at)}</div>
+      </div>`
+    )).join("");
+    $("failsView").innerHTML = html;
+  }
+
+  function renderLog() {
+    const l = state.log.slice(0, 120);
+    if (l.length === 0) {
+      $("logView").innerHTML = `<div class="muted">Chưa có log.</div>`;
+      return;
+    }
+    const html = l.map(x => {
+      const badge =
+        x.action === "PASS" ? "✅" :
+        x.action === "FAIL" ? "⛔" :
+        x.action === "CALL" ? "📣" :
+        x.action === "INIT" ? "⚙️" :
+        x.action === "SHUFFLE" ? "🔀" : "•";
+      return `<div class="log-item">
+        <div><b>${badge} ${escapeHtml(x.action)}</b> — <b>${escapeHtml(x.item)}</b></div>
+        <div class="muted">${escapeHtml(x.at)} • ${escapeHtml(x.note || "")}</div>
+      </div>`;
+    }).join("");
+    $("logView").innerHTML = html;
+  }
+
+  function renderCurrent() {
+    if (state.current === null) {
+      $("currentNum").textContent = "—";
+      const msg = state.queue.length
+        ? `Sẵn sàng. Còn ${state.queue.length} mục trong hàng đợi. Bấm Next để gọi.`
+        : "Hàng đợi trống. Hãy tạo danh sách ở bên phải.";
+      $("currentMeta").textContent = msg;
+      return;
+    }
+    $("currentNum").textContent = state.current;
+    const att = state.attempts[state.current] || 0;
+    $("currentMeta").textContent = att ? `Số này đã “chưa qua” ${att} lần trước đó.` : "Lần đầu gọi số này.";
+  }
+
+  function render() {
+    renderCurrent();
+    renderQueue();
+    renderFails();
+    renderLog();
+    ensureButtons();
+  }
+
+  function exportCSV() {
+    // Export log + passed + failed as a single CSV (log-oriented)
+    const rows = [["time","action","item","note"]];
+    for (const x of state.log.slice().reverse()) { // oldest first
+      rows.push([x.at, x.action, x.item, x.note || ""]);
+    }
+    const csv = rows.map(r => r.map(cell => {
+      const s = String(cell ?? "");
+      return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dem-so-log-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAll() {
+    const ok = confirm("Reset sẽ xóa toàn bộ danh sách, log, trạng thái. Bạn chắc chứ?");
+    if (!ok) return;
+    localStorage.removeItem(LS_KEY);
+    // reset in-memory
+    state.queue = [];
+    state.current = null;
+    state.passed = [];
+    state.failed = [];
+    state.attempts = {};
+    state.log = [];
+    state.history = [];
+    if (state.autoTimer) clearInterval(state.autoTimer);
+    state.autoTimer = null;
+    $("autoRun").checked = false;
+    render();
+  }
+
+  function setAutoRun(on) {
+    if (state.autoTimer) {
+      clearInterval(state.autoTimer);
+      state.autoTimer = null;
+    }
+    if (!on) return;
+
+    const ms = Number($("autoMs").value);
+    const interval = Number.isFinite(ms) && ms >= 300 ? ms : 1500;
+
+    state.autoTimer = setInterval(() => {
+      // auto-run chỉ gọi "Next" khi chưa có current
+      if (state.current === null && state.queue.length > 0) next();
+    }, interval);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  // events
+  $("btnBuild").addEventListener("click", () => {
+    const list = buildRange($("startNum").value, $("endNum").value);
+    if (list.length === 0) { alert("Khoảng số không hợp lệ."); return; }
+    useList(list);
+  });
+
+  $("btnUseCustom").addEventListener("click", () => {
+    const raw = $("customList").value || "";
+    const list = raw.split(/\r?\n/).map(normalizeItem).filter(Boolean);
+    if (list.length === 0) { alert("Danh sách tùy ý đang trống."); return; }
+    useList(list);
+  });
+
+  $("btnShuffle").addEventListener("click", shuffle);
+//vừa thêm
+  function shuffleAll() {
+  if (state.current !== null) {
+    alert("Đang có số hiện tại. Hãy bấm Đã qua/Chưa qua trước rồi trộn.");
+    return;
+  }
+  pushHistory();
+
+  // gộp toàn bộ những gì còn trong vòng quay
+  const all = state.queue.slice();
+
+  // trộn Fisher–Yates
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+
+  state.queue = all;
+  addLog("SHUFFLE_ALL", "-", "Trộn toàn bộ vòng quay");
+  save();
+  render();
+}
+// *thêm
+  $("btnNext").addEventListener("click", () => { if (state.current === null) next(); });
+  $("btnPass").addEventListener("click", pass);
+  $("btnFail").addEventListener("click", fail);
+  $("btnUndo").addEventListener("click", undo);
+  $("btnExport").addEventListener("click", exportCSV);
+  $("btnClearAll").addEventListener("click", clearAll);
+
+  $("autoRun").addEventListener("change", (e) => setAutoRun(e.target.checked));
+  $("autoMs").addEventListener("change", () => {
+    if ($("autoRun").checked) setAutoRun(true);
+  });
+
+  // keyboard shortcuts
+  window.addEventListener("keydown", (e) => {
+    // avoid when typing
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+
+    if (e.code === "Space") { e.preventDefault(); if (state.current === null) next(); }
+    else if (e.code === "Enter") { e.preventDefault(); pass(); }
+    else if (e.key.toLowerCase() === "f") { e.preventDefault(); fail(); }
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+  });
+
+  // init
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
