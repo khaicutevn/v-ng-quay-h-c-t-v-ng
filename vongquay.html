@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vòng quay học số & từ vựng</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin:0; background:#f6f7fb; color:#111; }
+    .wrap { max-width: 1040px; margin: 24px auto; padding: 0 16px; }
+    .card { background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.06); padding:16px; }
+    h1 { font-size:18px; margin:0 0 10px; }
+    h2 { font-size:14px; margin:0; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .grid { display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+
+    input, button, textarea, select {
+      padding:10px 12px; border-radius:10px; border:1px solid #d7dbe7;
+      background:#fff; font-size:14px;
+    }
+    textarea { width:100%; resize:vertical; }
+    button { cursor:pointer; border:0; background:#111; color:#fff; }
+    button.secondary { background:#4b5563; }
+    button.good { background:#16a34a; }
+    button.bad { background:#dc2626; }
+    button.ghost { background:#fff; color:#111; border:1px solid #d7dbe7; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+
+    .pill {
+      display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:999px;
+      background:#eef2ff; color:#1e3a8a; font-size:13px;
+    }
+
+    .big {
+      display:grid; place-items:center; padding:14px;
+      border-radius:14px; background:#0b1220; color:#fff;
+      min-height:180px;
+    }
+    .hero { text-align:center; }
+    .mainText { font-size:44px; font-weight:850; letter-spacing:.4px; }
+    .subText { opacity:.85; margin-top:8px; font-size:13px; line-height:1.35; }
+    .metaLine { margin-top:10px; font-size:13px; opacity:.9; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; padding:2px 6px; border:1px solid #d7dbe7; border-bottom-width:2px; border-radius:6px; background:#fff; }
+
+    hr { border:0; border-top:1px solid #e7e9f2; margin:14px 0; }
+
+    .panel { border:1px solid #e7e9f2; border-radius:12px; overflow:hidden; }
+    .panelHead {
+      padding:10px 12px; background:#fafbff; border-bottom:1px solid #e7e9f2;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .panelBody { padding:10px 12px; max-height:280px; overflow:auto; font-size:13px; }
+    .muted { color:#6b7280; font-size:12px; }
+    .item { padding:6px 0; border-bottom:1px dashed #eceef6; }
+    .item:last-child{ border-bottom:0; }
+
+    .hide { display:none !important; }
+
+    .choiceGrid {
+      display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px;
+    }
+    @media (max-width: 700px){ .choiceGrid{ grid-template-columns:1fr; } }
+    .choice {
+      border:1px solid #e7e9f2; border-radius:14px; padding:14px;
+      background:#fff; box-shadow:0 6px 18px rgba(0,0,0,.04);
+    }
+    .choiceTitle { font-size:16px; font-weight:750; margin:0 0 6px; }
+    .choiceDesc { margin:0 0 12px; color:#4b5563; font-size:13px; line-height:1.35; }
+    .tag { display:inline-flex; padding:6px 10px; border-radius:999px; background:#f3f4f6; font-size:12px; color:#111; }
+
+    .answerBox {
+      width:100%;
+      border-radius:12px;
+      border:1px solid #d7dbe7;
+      padding:10px 12px;
+      font-size:15px;
+    }
+    .statusOk { color:#16a34a; font-weight:700; }
+    .statusBad { color:#dc2626; font-weight:700; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <h1 id="appTitle">Vòng quay học số & từ vựng</h1>
+        <div class="row">
+          <button class="ghost" id="btnHome" title="Trở về menu">Trở ra</button>
+          <button class="ghost" id="btnResetAll" title="Reset toàn bộ app">Reset app</button>
+        </div>
+      </div>
+
+      <!-- HOME -->
+      <div id="screenHome">
+        <div class="row">
+          <span class="pill">🎲 Quay ngẫu nhiên</span>
+          <span class="pill">⛔ Chưa qua → quay lại vòng</span>
+          <span class="pill">✅ Qua → loại khỏi vòng</span>
+        </div>
+
+        <div class="choiceGrid">
+          <div class="choice">
+            <div class="choiceTitle">1) Chỉ quay số</div>
+            <p class="choiceDesc">Dùng để gọi số theo thứ tự ngẫu nhiên. Có Qua/Chưa qua, Undo, Tự quay.</p>
+            <div class="row" style="justify-content:space-between;">
+              <span class="tag">Phù hợp: học/thi/điểm danh</span>
+              <button id="goNumbers">Vào mục Số</button>
+            </div>
+          </div>
+
+          <div class="choice">
+            <div class="choiceTitle">2) Quay từ vựng (2 chiều)</div>
+            <p class="choiceDesc">Hiện từ → gõ nghĩa hoặc hiện nghĩa → gõ từ. Từ kèm phiên âm + từ loại. Danh sách mặc định thu gọn.</p>
+            <div class="row" style="justify-content:space-between;">
+              <span class="tag">Phù hợp: học từ trên giấy</span>
+              <button id="goVocab">Vào mục Từ vựng</button>
+            </div>
+          </div>
+        </div>
+
+        <hr/>
+        <div class="muted">
+          Phím tắt trong các mục: <span class="kbd">Space</span> Next • <span class="kbd">Enter</span> Qua/Đúng • <span class="kbd">F</span> Chưa qua/Sai • <span class="kbd">Ctrl/⌘+Z</span> Undo
+        </div>
+      </div>
+
+      <!-- NUMBERS -->
+      <div id="screenNumbers" class="hide">
+        <div class="row">
+          <span class="pill">🔢 Mục: Quay số</span>
+          <span class="pill">🎲 Next = chọn ngẫu nhiên</span>
+          <span class="pill">⛔ Chưa qua = thêm lại vòng</span>
+        </div>
+
+        <hr/>
+
+        <div class="grid">
+          <!-- LEFT -->
+          <div>
+            <div class="big">
+              <div class="hero">
+                <div class="mainText" id="numCurrent">—</div>
+                <div class="subText" id="numMeta">Nhập danh sách số bên phải rồi bấm “Bắt đầu”.</div>
+                <div class="metaLine" id="numStatusLine"></div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="secondary" id="numNext">Next (Space)</button>
+              <button class="good" id="numPass" disabled>Qua (Enter)</button>
+              <button class="bad" id="numFail" disabled>Chưa qua (F)</button>
+              <button class="ghost" id="numUndo" disabled>Undo</button>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <label class="row" style="gap:8px;">
+                <input type="checkbox" id="numAutoRun" />
+                <span>Tự quay</span>
+              </label>
+              <label class="row" style="gap:8px;">
+                <span class="muted">Mỗi</span>
+                <input type="number" id="numAutoMs" min="400" step="100" value="1200" style="width:120px;" />
+                <span class="muted">ms</span>
+              </label>
+              <span class="pill" id="numStats">Còn: 0 • Qua: 0 • Chưa qua: 0</span>
+            </div>
+
+            <div class="row" style="margin-top:14px; gap:12px;">
+              <div class="panel" style="flex:1;">
+                <div class="panelHead">
+                  <h2>📌 Còn trong vòng quay</h2>
+                  <button class="ghost" data-toggle="numPool">Mở</button>
+                </div>
+                <div class="panelBody hide" id="numPoolBody"></div>
+              </div>
+
+              <div class="panel" style="flex:1;">
+                <div class="panelHead">
+                  <h2>🟠 Danh sách “Chưa qua”</h2>
+                  <button class="ghost" data-toggle="numFails">Mở</button>
+                </div>
+                <div class="panelBody hide" id="numFailsBody"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <div class="panel">
+              <div class="panelHead">
+                <h2>⚙️ Nhập danh sách số</h2>
+                <div class="row">
+                  <button class="ghost" id="numExport">Export CSV</button>
+                  <button class="ghost" id="numReset">Reset mục</button>
+                </div>
+              </div>
+              <div class="panelBody" style="max-height:none;">
+                <div class="row">
+                  <label>
+                    <div class="muted">Từ số</div>
+                    <input type="number" id="numStart" value="1" />
+                  </label>
+                  <label>
+                    <div class="muted">Đến số</div>
+                    <input type="number" id="numEnd" value="50" />
+                  </label>
+                  <button id="numBuild">Bắt đầu (tạo vòng)</button>
+                </div>
+
+                <div style="margin:12px 0 6px;" class="muted">
+                  Hoặc nhập danh sách tùy ý (mỗi dòng 1 số/mã):
+                </div>
+                <textarea id="numCustom" rows="7" placeholder="Ví dụ:
+A01
+A02
+B10"></textarea>
+
+                <div class="row" style="margin-top:10px;">
+                  <button class="secondary" id="numUseCustom">Dùng danh sách tùy ý</button>
+                  <button class="ghost" id="numShuffle">Trộn vòng còn lại</button>
+                </div>
+
+                <hr/>
+
+                <div class="panel">
+                  <div class="panelHead">
+                    <h2>🧾 Nhật ký</h2>
+                    <button class="ghost" data-toggle="numLog">Mở</button>
+                  </div>
+                  <div class="panelBody hide" id="numLogBody"></div>
+                </div>
+
+                <div class="muted" style="margin-top:10px;">
+                  Next sẽ rút 1 số ra khỏi vòng để tránh lặp ngay. “Chưa qua” sẽ đưa lại số đó vào vòng.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOCAB -->
+      <div id="screenVocab" class="hide">
+        <div class="row">
+          <span class="pill">📚 Mục: Quay từ vựng</span>
+          <span class="pill">↔ 2 chiều kiểm tra</span>
+          <span class="pill">🙈 Danh sách mặc định thu gọn</span>
+        </div>
+
+        <hr/>
+
+        <div class="grid">
+          <!-- LEFT -->
+          <div>
+            <div class="big">
+              <div class="hero">
+                <div class="mainText" id="vbPromptMain">—</div>
+                <div class="subText" id="vbPromptSub">Nhập danh sách bên phải rồi bấm “Bắt đầu”.</div>
+                <div class="metaLine" id="vbModeLine"></div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="secondary" id="vbNext">Next (Space)</button>
+              <button class="good" id="vbPass" disabled>Qua/Đúng (Enter)</button>
+              <button class="bad" id="vbFail" disabled>Chưa qua/Sai (F)</button>
+              <button class="ghost" id="vbUndo" disabled>Undo</button>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <input id="vbAnswer" class="answerBox" placeholder="Gõ đáp án ở đây rồi bấm Enter (hoặc bấm Kiểm tra)" />
+              <button class="ghost" id="vbCheck">Kiểm tra</button>
+              <button class="ghost" id="vbReveal">Hiện đáp án</button>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <span class="pill" id="vbStats">Còn: 0 • Qua: 0 • Chưa qua: 0</span>
+              <span id="vbJudge" class="muted"></span>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <label class="row" style="gap:8px;">
+                <input type="checkbox" id="vbAutoRun" />
+                <span>Tự quay</span>
+              </label>
+              <label class="row" style="gap:8px;">
+                <span class="muted">Mỗi</span>
+                <input type="number" id="vbAutoMs" min="500" step="100" value="1500" style="width:120px;" />
+                <span class="muted">ms</span>
+              </label>
+              <span class="muted">Gợi ý: Tự quay chỉ chạy Next (không tự chấm).</span>
+            </div>
+
+            <div class="row" style="margin-top:14px; gap:12px;">
+              <div class="panel" style="flex:1;">
+                <div class="panelHead">
+                  <h2>📌 Còn trong vòng quay</h2>
+                  <button class="ghost" data-toggle="vbPool">Mở</button>
+                </div>
+                <div class="panelBody hide" id="vbPoolBody"></div>
+              </div>
+
+              <div class="panel" style="flex:1;">
+                <div class="panelHead">
+                  <h2>🟠 Danh sách “Chưa qua”</h2>
+                  <button class="ghost" data-toggle="vbFails">Mở</button>
+                </div>
+                <div class="panelBody hide" id="vbFailsBody"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <div class="panel">
+              <div class="panelHead">
+                <h2>⚙️ Nhập từ vựng</h2>
+                <div class="row">
+                  <button class="ghost" id="vbExport">Export CSV</button>
+                  <button class="ghost" id="vbReset">Reset mục</button>
+                </div>
+              </div>
+
+              <div class="panelBody" style="max-height:none;">
+                <div class="row" style="justify-content:space-between;">
+                  <label class="row" style="gap:8px;">
+                    <span class="muted">Chế độ:</span>
+                    <select id="vbMode">
+                      <option value="WORD_TO_MEANING">Hiện từ → gõ nghĩa</option>
+                      <option value="MEANING_TO_WORD">Hiện nghĩa → gõ từ</option>
+                    </select>
+                  </label>
+                  <button class="ghost" id="vbShuffle">Trộn vòng còn lại</button>
+                </div>
+
+                <div class="muted" style="margin:10px 0 8px;">
+                  Định dạng mỗi dòng: <span class="mono">từ | phiên âm | từ loại | nghĩa</span><br/>
+                  Bạn có thể bỏ trống phiên âm/từ loại, nhưng nên giữ dấu <span class="mono">|</span> cho đủ cột.
+                  Nhiều đáp án đúng: ngăn cách bằng <span class="mono">;</span> hoặc <span class="mono">/</span> (ví dụ nghĩa: <span class="mono">tách rời; cất cánh</span>).
+                </div>
+
+                <textarea id="vbList" rows="10" placeholder="Ví dụ:
+take off | /teɪk ɒf/ | phr.v | cất cánh; cởi ra
+sustainable | /səˈsteɪnəbl/ | adj | bền vững
+apple | /ˈæp.əl/ | n | quả táo"></textarea>
+
+                <div class="row" style="margin-top:10px;">
+                  <button id="vbStart">Bắt đầu (tạo vòng)</button>
+                </div>
+
+                <hr/>
+
+                <div class="panel">
+                  <div class="panelHead">
+                    <h2>🧾 Nhật ký</h2>
+                    <button class="ghost" data-toggle="vbLog">Mở</button>
+                  </div>
+                  <div class="panelBody hide" id="vbLogBody"></div>
+                </div>
+
+                <div class="muted" style="margin-top:10px;">
+                  Next sẽ rút 1 mục ra khỏi vòng để tránh lặp ngay. “Chưa qua” sẽ đưa lại mục đó vào vòng.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /screenVocab -->
+    </div><!-- /card -->
+  </div><!-- /wrap -->
+
+<script>
+(() => {
+  // ========= Common =========
+  const $ = (id) => document.getElementById(id);
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  const nowStr = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  const normalize = (s) => String(s ?? "").trim();
+  const normAnswer = (s) =>
+    normalize(s)
+      .toLowerCase()
+      .replace(/\s+/g," ")
+      .replace(/[“”]/g,'"')
+      .replace(/[’]/g,"'");
+
+  function togglePanel(idBody, btn) {
+    const body = $(idBody);
+    const isHidden = body.classList.contains("hide");
+    body.classList.toggle("hide");
+    btn.textContent = isHidden ? "Thu gọn" : "Mở";
+  }
+
+  // ========= Navigation =========
+  const screens = {
+    home: $("screenHome"),
+    numbers: $("screenNumbers"),
+    vocab: $("screenVocab"),
+  };
+
+  function showScreen(name) {
+    Object.values(screens).forEach(el => el.classList.add("hide"));
+    screens[name].classList.remove("hide");
+    $("btnHome").disabled = (name === "home");
+    $("appTitle").textContent =
+      name === "numbers" ? "Vòng quay — Mục Số" :
+      name === "vocab" ? "Vòng quay — Mục Từ vựng" :
+      "Vòng quay học số & từ vựng";
+  }
+
+  $("goNumbers").addEventListener("click", () => showScreen("numbers"));
+  $("goVocab").addEventListener("click", () => showScreen("vocab"));
+  $("btnHome").addEventListener("click", () => showScreen("home"));
+
+  // ========= Numbers Module =========
+  const LS_NUM = "spin_numbers_v3";
+  const numState = {
+    pool: [],
+    current: null,
+    passed: [],
+    failed: [],      // {item, at, count}
+    failCount: {},
+    log: [],
+    history: [],
+    autoTimer: null
+  };
+
+  function numSave(){ localStorage.setItem(LS_NUM, JSON.stringify(numState)); }
+  function numLoad(){
+    const raw = localStorage.getItem(LS_NUM); if(!raw) return;
+    try{ Object.assign(numState, JSON.parse(raw)); } catch {}
+  }
+  function numPushHistory(){
+    numState.history.push(JSON.stringify({
+      pool:numState.pool, current:numState.current, passed:numState.passed,
+      failed:numState.failed, failCount:numState.failCount, log:numState.log
+    }));
+    if(numState.history.length>40) numState.history.shift();
+    $("numUndo").disabled = numState.history.length===0;
+  }
+  function numUndo(){
+    const snap = numState.history.pop(); if(!snap) return;
+    Object.assign(numState, JSON.parse(snap));
+    $("numUndo").disabled = numState.history.length===0;
+    numSave(); numRender();
+  }
+  function numLog(action,item,note=""){
+    numState.log.unshift({at:nowStr(), action, item, note});
+    if(numState.log.length>200) numState.log.pop();
+  }
+  function numBuildRange(a,b){
+    const s=Number(a), e=Number(b);
+    if(!Number.isFinite(s)||!Number.isFinite(e)||e<s) return [];
+    const arr=[];
+    for(let i=s;i<=e;i++) arr.push(String(i));
+    return arr;
+  }
+  function numStartWithList(list){
+    if(list.length===0){ alert("Danh sách trống."); return; }
+    numPushHistory();
+    numState.pool=list.slice();
+    numState.current=null;
+    numState.passed=[];
+    numState.failed=[];
+    numState.failCount={};
+    numState.log=[];
+    numLog("INIT","-",`Tạo vòng (${list.length} mục)`);
+    numSave(); numRender();
+  }
+  function numPick(){
+    if(numState.pool.length===0) return null;
+    const idx=Math.floor(Math.random()*numState.pool.length);
+    return numState.pool.splice(idx,1)[0];
+  }
+  function numNext(){
+    if(numState.current!==null) return;
+    if(numState.pool.length===0) return;
+    numPushHistory();
+    numState.current=numPick();
+    numLog("CALL",numState.current,"Quay ngẫu nhiên");
+    numSave(); numRender();
+  }
+  function numPass(){
+    if(numState.current===null) return;
+    numPushHistory();
+    numState.passed.unshift({item:numState.current, at:nowStr()});
+    numLog("PASS",numState.current,"Qua → loại khỏi vòng");
+    numState.current=null;
+    numSave(); numRender();
+  }
+  function numFail(){
+    if(numState.current===null) return;
+    numPushHistory();
+    const item=numState.current;
+    numState.failCount[item]=(numState.failCount[item]||0)+1;
+    numState.pool.push(item);
+    const rec={item, at:nowStr(), count:numState.failCount[item]};
+    const idx=numState.failed.findIndex(x=>x.item===item);
+    if(idx>=0) numState.failed[idx]=rec; else numState.failed.unshift(rec);
+    numLog("FAIL",item,`Chưa qua (lần ${rec.count}) → thêm lại vòng`);
+    numState.current=null;
+    numSave(); numRender();
+  }
+  function numShuffle(){
+    if(numState.pool.length<2) return;
+    numPushHistory();
+    for(let i=numState.pool.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [numState.pool[i], numState.pool[j]]=[numState.pool[j], numState.pool[i]];
+    }
+    numLog("SHUFFLE","-","Trộn vòng còn lại");
+    numSave(); numRender();
+  }
+  function numExport(){
+    const rows=[["time","action","item","note"]];
+    for(const x of numState.log.slice().reverse()){
+      rows.push([x.at,x.action,x.item,x.note||""]);
+    }
+    const csv=rows.map(r=>r.map(cell=>{
+      const s=String(cell??"");
+      return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`so-log-${Date.now()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  function numReset(){
+    const ok=confirm("Reset mục Số sẽ xóa trạng thái của mục này. Bạn chắc chứ?");
+    if(!ok) return;
+    localStorage.removeItem(LS_NUM);
+    Object.assign(numState,{
+      pool:[], current:null, passed:[], failed:[], failCount:{}, log:[], history:[],
+      autoTimer: (numState.autoTimer? (clearInterval(numState.autoTimer), null): null)
+    });
+    $("numAutoRun").checked=false;
+    numRender();
+  }
+  function numSetAuto(on){
+    if(numState.autoTimer){ clearInterval(numState.autoTimer); numState.autoTimer=null; }
+    if(!on) return;
+    const ms=Number($("numAutoMs").value);
+    const interval=(Number.isFinite(ms)&&ms>=400)?ms:1200;
+    numState.autoTimer=setInterval(()=>{
+      if(numState.current===null && numState.pool.length>0) numNext();
+    }, interval);
+  }
+  function numEnsureButtons(){
+    const hasCurrent=numState.current!==null;
+    $("numPass").disabled=!hasCurrent;
+    $("numFail").disabled=!hasCurrent;
+    $("numNext").disabled=hasCurrent || numState.pool.length===0;
+    $("numUndo").disabled=numState.history.length===0;
+  }
+  function numRender(){
+    // current
+    if(numState.current===null){
+      $("numCurrent").textContent="—";
+      $("numMeta").textContent = numState.pool.length
+        ? `Còn ${numState.pool.length} mục trong vòng. Bấm Next để quay.`
+        : "Vòng quay trống. Nhập danh sách rồi bấm Bắt đầu.";
+      $("numStatusLine").textContent="";
+    } else {
+      $("numCurrent").textContent=numState.current;
+      const c=numState.failCount[numState.current]||0;
+      $("numMeta").textContent = "Đánh giá: qua hay chưa qua?";
+      $("numStatusLine").textContent = c ? `Mục này đã “chưa qua” ${c} lần.` : "";
+    }
+
+    // stats
+    $("numStats").textContent = `Còn: ${numState.pool.length} • Qua: ${numState.passed.length} • Chưa qua: ${numState.failed.length}`;
+
+    // pool list
+    if(numState.pool.length===0){
+      $("numPoolBody").innerHTML = `<div class="muted">Không còn mục nào.</div>`;
+    } else {
+      const view=numState.pool.slice(0,200);
+      const html=view.map((x,i)=>`<div class="item"><b>${i+1}.</b> ${escapeHtml(x)}</div>`).join("");
+      const more=numState.pool.length>view.length ? `<div class="muted">… và còn ${numState.pool.length-view.length} mục nữa</div>` : "";
+      $("numPoolBody").innerHTML = html+more;
+    }
+
+    // fails list
+    if(numState.failed.length===0){
+      $("numFailsBody").innerHTML = `<div class="muted">Chưa có mục “Chưa qua”.</div>`;
+    } else {
+      const view=numState.failed.slice(0,200);
+      $("numFailsBody").innerHTML = view.map(x=>`
+        <div class="item">
+          <b>${escapeHtml(x.item)}</b>
+          <div class="muted">Chưa qua: ${x.count} • Lúc: ${escapeHtml(x.at)}</div>
+        </div>
+      `).join("");
+    }
+
+    // log
+    if(numState.log.length===0){
+      $("numLogBody").innerHTML = `<div class="muted">Chưa có log.</div>`;
+    } else {
+      const view=numState.log.slice(0,120);
+      $("numLogBody").innerHTML = view.map(x=>{
+        const badge = x.action==="PASS"?"✅":x.action==="FAIL"?"⛔":x.action==="CALL"?"🎲":x.action==="INIT"?"⚙️":x.action==="SHUFFLE"?"🔀":"•";
+        return `<div class="item">
+          <div><b>${badge} ${escapeHtml(x.action)}</b> — <b>${escapeHtml(x.item)}</b></div>
+          <div class="muted">${escapeHtml(x.at)} • ${escapeHtml(x.note||"")}</div>
+        </div>`;
+      }).join("");
+    }
+
+    numEnsureButtons();
+  }
+
+  // number events
+  $("numBuild").addEventListener("click", () => {
+    const list=numBuildRange($("numStart").value, $("numEnd").value);
+    if(list.length===0) return alert("Khoảng số không hợp lệ.");
+    numStartWithList(list);
+  });
+  $("numUseCustom").addEventListener("click", () => {
+    const raw=$("numCustom").value||"";
+    const list=raw.split(/\r?\n/).map(normalize).filter(Boolean);
+    if(list.length===0) return alert("Danh sách tùy ý đang trống.");
+    numStartWithList(list);
+  });
+  $("numNext").addEventListener("click", numNext);
+  $("numPass").addEventListener("click", numPass);
+  $("numFail").addEventListener("click", numFail);
+  $("numUndo").addEventListener("click", numUndo);
+  $("numShuffle").addEventListener("click", numShuffle);
+  $("numExport").addEventListener("click", numExport);
+  $("numReset").addEventListener("click", numReset);
+  $("numAutoRun").addEventListener("change", (e)=> numSetAuto(e.target.checked));
+  $("numAutoMs").addEventListener("change", ()=> { if($("numAutoRun").checked) numSetAuto(true); });
+
+  // collapsible buttons (numbers)
+  document.querySelectorAll('[data-toggle="numPool"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("numPoolBody", btn));
+  });
+  document.querySelectorAll('[data-toggle="numFails"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("numFailsBody", btn));
+  });
+  document.querySelectorAll('[data-toggle="numLog"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("numLogBody", btn));
+  });
+
+  // ========= Vocab Module =========
+  const LS_VB = "spin_vocab_v3";
+  const vbState = {
+    pool: [],        // array of ids
+    currentId: null,
+    items: {},       // id -> {word, pron, pos, meaning}
+    passed: [],
+    failed: [],      // {id, at, count}
+    failCount: {},
+    log: [],
+    history: [],
+    autoTimer: null,
+    mode: "WORD_TO_MEANING", // or MEANING_TO_WORD
+    lastReveal: null
+  };
+
+  function vbSave(){ localStorage.setItem(LS_VB, JSON.stringify(vbState)); }
+  function vbLoad(){
+    const raw = localStorage.getItem(LS_VB); if(!raw) return;
+    try{ Object.assign(vbState, JSON.parse(raw)); } catch {}
+    // ensure select matches
+    if($("vbMode")) $("vbMode").value = vbState.mode || "WORD_TO_MEANING";
+  }
+  function vbPushHistory(){
+    vbState.history.push(JSON.stringify({
+      pool:vbState.pool, currentId:vbState.currentId, items:vbState.items,
+      passed:vbState.passed, failed:vbState.failed, failCount:vbState.failCount,
+      log:vbState.log, mode: vbState.mode
+    }));
+    if(vbState.history.length>40) vbState.history.shift();
+    $("vbUndo").disabled = vbState.history.length===0;
+  }
+  function vbUndo(){
+    const snap=vbState.history.pop(); if(!snap) return;
+    Object.assign(vbState, JSON.parse(snap));
+    $("vbMode").value = vbState.mode || "WORD_TO_MEANING";
+    $("vbUndo").disabled = vbState.history.length===0;
+    vbState.lastReveal=null;
+    vbSave(); vbRender();
+  }
+  function vbLog(action,item,note=""){
+    vbState.log.unshift({at:nowStr(), action, item, note});
+    if(vbState.log.length>200) vbState.log.pop();
+  }
+  function makeId(i){ return `w_${Date.now()}_${i}_${Math.random().toString(16).slice(2)}`; }
+
+  function parseVocabLines(raw){
+    const lines = (raw||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const items = [];
+    for(const line of lines){
+      // allow delimiter: | or tab
+      const parts = line.split("|").map(x=>x.trim());
+      let word="", pron="", pos="", meaning="";
+      if(parts.length>=4){
+        [word, pron, pos, meaning] = parts;
+      } else {
+        // try tab split
+        const t=line.split("\t").map(x=>x.trim());
+        if(t.length>=4){ [word, pron, pos, meaning]=t; }
+        else if(t.length===2){ [word, meaning]=t; }
+        else if(parts.length===2){ [word, meaning]=parts; }
+        else {
+          // fallback: entire line as word (no meaning)
+          word=line; meaning="";
+        }
+      }
+      word=normalize(word);
+      meaning=normalize(meaning);
+      pron=normalize(pron);
+      pos=normalize(pos);
+      if(!word && !meaning) continue;
+      items.push({word, pron, pos, meaning});
+    }
+    return items;
+  }
+
+  function vbStart(){
+    const list = parseVocabLines($("vbList").value||"");
+    if(list.length===0){
+      alert("Danh sách từ vựng trống hoặc sai định dạng.");
+      return;
+    }
+    vbPushHistory();
+    vbState.items = {};
+    vbState.pool = [];
+    vbState.currentId = null;
+    vbState.passed = [];
+    vbState.failed = [];
+    vbState.failCount = {};
+    vbState.log = [];
+    vbState.mode = $("vbMode").value || "WORD_TO_MEANING";
+    vbState.lastReveal = null;
+
+    list.forEach((it, i)=>{
+      const id=makeId(i);
+      vbState.items[id]=it;
+      vbState.pool.push(id);
+    });
+    vbLog("INIT","-",`Tạo vòng (${list.length} mục)`);
+    vbSave(); vbRender();
+  }
+
+  function vbPick(){
+    if(vbState.pool.length===0) return null;
+    const idx=Math.floor(Math.random()*vbState.pool.length);
+    return vbState.pool.splice(idx,1)[0];
+  }
+
+  function vbNext(){
+    if(vbState.currentId!==null) return;
+    if(vbState.pool.length===0) return;
+    vbPushHistory();
+    vbState.currentId = vbPick();
+    vbState.lastReveal=null;
+    $("vbAnswer").value="";
+    $("vbJudge").textContent="";
+    vbLog("CALL", vbState.currentId, "Quay ngẫu nhiên");
+    vbSave(); vbRender();
+    $("vbAnswer").focus();
+  }
+
+  function currentItem(){
+    if(!vbState.currentId) return null;
+    return vbState.items[vbState.currentId] || null;
+  }
+
+  function expectedAnswers(){
+    const it=currentItem(); if(!it) return [];
+    if(vbState.mode==="WORD_TO_MEANING"){
+      // meaning can be multiple separated by ; or /
+      const raw = it.meaning || "";
+      return raw.split(/[;/]/).map(x=>normAnswer(x)).filter(Boolean);
+    } else {
+      // word expected
+      const raw = it.word || "";
+      return raw.split(/[;/]/).map(x=>normAnswer(x)).filter(Boolean);
+    }
+  }
+
+  function promptText(){
+    const it=currentItem(); if(!it) return {main:"—", sub:""};
+    if(vbState.mode==="WORD_TO_MEANING"){
+      const main = it.word || "(không có từ)";
+      const extra = [
+        it.pron ? `Phiên âm: ${it.pron}` : "",
+        it.pos ? `Từ loại: ${it.pos}` : ""
+      ].filter(Boolean).join(" • ");
+      const sub = extra ? extra : "Gõ nghĩa (có thể 1 trong nhiều nghĩa).";
+      return {main, sub};
+    } else {
+      const main = it.meaning || "(không có nghĩa)";
+      const sub = "Gõ từ vựng (đáp án là từ).";
+      return {main, sub};
+    }
+  }
+
+  function vbCheck(){
+    const it=currentItem();
+    if(!it) return;
+
+    const user = normAnswer($("vbAnswer").value||"");
+    if(!user){
+      $("vbJudge").innerHTML = `<span class="statusBad">Chưa nhập đáp án.</span>`;
+      return;
+    }
+
+    const exp = expectedAnswers();
+    if(exp.length===0){
+      $("vbJudge").innerHTML = `<span class="muted">Không có đáp án chuẩn để so sánh (dòng này thiếu nghĩa hoặc thiếu từ).</span>`;
+      return;
+    }
+
+    const ok = exp.includes(user);
+    if(ok){
+      $("vbJudge").innerHTML = `<span class="statusOk">Đúng ✅</span>`;
+    } else {
+      $("vbJudge").innerHTML = `<span class="statusBad">Chưa đúng ⛔</span>`;
+    }
+    // không tự pass/fail để bạn chủ động; nhưng Enter sẽ pass mặc định (đúng) nếu bạn muốn.
+    return ok;
+  }
+
+  function vbReveal(){
+    const it=currentItem(); if(!it) return;
+    let ans="";
+    if(vbState.mode==="WORD_TO_MEANING"){
+      ans = it.meaning || "(trống)";
+    } else {
+      const extra = [
+        it.word || "(trống)",
+        it.pron ? `(${it.pron})` : "",
+        it.pos ? `[${it.pos}]` : ""
+      ].filter(Boolean).join(" ");
+      ans = extra;
+    }
+    vbState.lastReveal = ans;
+    $("vbJudge").innerHTML = `<span class="muted">Đáp án: </span><b>${escapeHtml(ans)}</b>`;
+    vbSave();
+  }
+
+  function vbPass(){
+    if(vbState.currentId===null) return;
+    vbPushHistory();
+    const id=vbState.currentId;
+    vbState.passed.unshift({id, at:nowStr()});
+    vbLog("PASS", id, "Qua/Đúng → loại khỏi vòng");
+    vbState.currentId=null;
+    vbState.lastReveal=null;
+    $("vbAnswer").value="";
+    $("vbJudge").textContent="";
+    vbSave(); vbRender();
+  }
+
+  function vbFail(){
+    if(vbState.currentId===null) return;
+    vbPushHistory();
+    const id=vbState.currentId;
+    vbState.failCount[id]=(vbState.failCount[id]||0)+1;
+    vbState.pool.push(id);
+
+    const rec={id, at:nowStr(), count:vbState.failCount[id]};
+    const idx=vbState.failed.findIndex(x=>x.id===id);
+    if(idx>=0) vbState.failed[idx]=rec; else vbState.failed.unshift(rec);
+
+    vbLog("FAIL", id, `Chưa qua/Sai (lần ${rec.count}) → thêm lại vòng`);
+    vbState.currentId=null;
+    vbState.lastReveal=null;
+    $("vbAnswer").value="";
+    $("vbJudge").textContent="";
+    vbSave(); vbRender();
+  }
+
+  function vbShuffle(){
+    if(vbState.pool.length<2) return;
+    vbPushHistory();
+    for(let i=vbState.pool.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [vbState.pool[i], vbState.pool[j]]=[vbState.pool[j], vbState.pool[i]];
+    }
+    vbLog("SHUFFLE","-","Trộn vòng còn lại");
+    vbSave(); vbRender();
+  }
+
+  function vbSetMode(){
+    vbState.mode = $("vbMode").value || "WORD_TO_MEANING";
+    vbState.lastReveal=null;
+    vbSave(); vbRender();
+  }
+
+  function vbExport(){
+    const rows=[["time","action","id","word","pron","pos","meaning","note"]];
+    for(const x of vbState.log.slice().reverse()){
+      const id = x.item;
+      const it = vbState.items[id] || {};
+      rows.push([x.at, x.action, id, it.word||"", it.pron||"", it.pos||"", it.meaning||"", x.note||""]);
+    }
+    const csv=rows.map(r=>r.map(cell=>{
+      const s=String(cell??"");
+      return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`tu-vung-log-${Date.now()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function vbReset(){
+    const ok=confirm("Reset mục Từ vựng sẽ xóa trạng thái của mục này. Bạn chắc chứ?");
+    if(!ok) return;
+    localStorage.removeItem(LS_VB);
+    if(vbState.autoTimer){ clearInterval(vbState.autoTimer); vbState.autoTimer=null; }
+    Object.assign(vbState,{
+      pool:[], currentId:null, items:{}, passed:[], failed:[], failCount:{}, log:[], history:[],
+      autoTimer:null, mode:"WORD_TO_MEANING", lastReveal:null
+    });
+    $("vbAutoRun").checked=false;
+    $("vbMode").value="WORD_TO_MEANING";
+    vbRender();
+  }
+
+  function vbSetAuto(on){
+    if(vbState.autoTimer){ clearInterval(vbState.autoTimer); vbState.autoTimer=null; }
+    if(!on) return;
+    const ms=Number($("vbAutoMs").value);
+    const interval=(Number.isFinite(ms)&&ms>=500)?ms:1500;
+    vbState.autoTimer=setInterval(()=>{
+      if(vbState.currentId===null && vbState.pool.length>0) vbNext();
+    }, interval);
+  }
+
+  function vbEnsureButtons(){
+    const hasCurrent = vbState.currentId!==null;
+    $("vbPass").disabled = !hasCurrent;
+    $("vbFail").disabled = !hasCurrent;
+    $("vbNext").disabled = hasCurrent || vbState.pool.length===0;
+    $("vbUndo").disabled = vbState.history.length===0;
+    $("vbCheck").disabled = !hasCurrent;
+    $("vbReveal").disabled = !hasCurrent;
+    $("vbAnswer").disabled = !hasCurrent;
+  }
+
+  function vbRender(){
+    // mode line
+    $("vbModeLine").textContent =
+      vbState.mode==="WORD_TO_MEANING"
+        ? "Chế độ: Hiện từ → gõ nghĩa"
+        : "Chế độ: Hiện nghĩa → gõ từ (từ kèm phiên âm + từ loại khi hiện đáp án)";
+
+    // current prompt
+    if(vbState.currentId===null){
+      $("vbPromptMain").textContent="—";
+      $("vbPromptSub").textContent = vbState.pool.length
+        ? `Còn ${vbState.pool.length} mục trong vòng. Bấm Next để quay.`
+        : "Vòng quay trống. Nhập danh sách rồi bấm “Bắt đầu”.";
+      $("vbJudge").textContent="";
+      $("vbAnswer").value="";
+    } else {
+      const p=promptText();
+      $("vbPromptMain").textContent=p.main;
+      $("vbPromptSub").textContent=p.sub;
+    }
+
+    // stats
+    $("vbStats").textContent = `Còn: ${vbState.pool.length} • Qua: ${vbState.passed.length} • Chưa qua: ${vbState.failed.length}`;
+
+    // pool list (collapsed by default)
+    const poolBody=$("vbPoolBody");
+    if(vbState.pool.length===0){
+      poolBody.innerHTML = `<div class="muted">Không còn mục nào.</div>`;
+    } else {
+      const view=vbState.pool.slice(0,200);
+      poolBody.innerHTML = view.map((id,i)=>{
+        const it=vbState.items[id]||{};
+        // không show nghĩa trong list để tránh lộ; chỉ show word
+        const label = it.word ? it.word : `(no word)`;
+        const meta = [it.pron?it.pron:"", it.pos?it.pos:""].filter(Boolean).join(" • ");
+        return `<div class="item"><b>${i+1}.</b> ${escapeHtml(label)} <span class="muted">${meta?`— ${escapeHtml(meta)}`:""}</span></div>`;
+      }).join("") + (vbState.pool.length>view.length ? `<div class="muted">… và còn ${vbState.pool.length-view.length} mục nữa</div>` : "");
+    }
+
+    // fails list (show word but not meaning)
+    const failsBody=$("vbFailsBody");
+    if(vbState.failed.length===0){
+      failsBody.innerHTML = `<div class="muted">Chưa có mục “Chưa qua”.</div>`;
+    } else {
+      const view=vbState.failed.slice(0,200);
+      failsBody.innerHTML = view.map(x=>{
+        const it=vbState.items[x.id]||{};
+        const w=it.word||"(no word)";
+        const meta=[it.pron?it.pron:"", it.pos?it.pos:""].filter(Boolean).join(" • ");
+        return `<div class="item">
+          <b>${escapeHtml(w)}</b> <span class="muted">${meta?`— ${escapeHtml(meta)}`:""}</span>
+          <div class="muted">Chưa qua: ${x.count} • Lúc: ${escapeHtml(x.at)}</div>
+        </div>`;
+      }).join("");
+    }
+
+    // log
+    const logBody=$("vbLogBody");
+    if(vbState.log.length===0){
+      logBody.innerHTML = `<div class="muted">Chưa có log.</div>`;
+    } else {
+      const view=vbState.log.slice(0,120);
+      logBody.innerHTML = view.map(x=>{
+        const badge = x.action==="PASS"?"✅":x.action==="FAIL"?"⛔":x.action==="CALL"?"🎲":x.action==="INIT"?"⚙️":x.action==="SHUFFLE"?"🔀":"•";
+        const it = vbState.items[x.item] || {};
+        const label = it.word ? it.word : x.item;
+        return `<div class="item">
+          <div><b>${badge} ${escapeHtml(x.action)}</b> — <b>${escapeHtml(label)}</b></div>
+          <div class="muted">${escapeHtml(x.at)} • ${escapeHtml(x.note||"")}</div>
+        </div>`;
+      }).join("");
+    }
+
+    vbEnsureButtons();
+  }
+
+  // vocab events
+  $("vbStart").addEventListener("click", vbStart);
+  $("vbMode").addEventListener("change", vbSetMode);
+  $("vbNext").addEventListener("click", vbNext);
+  $("vbPass").addEventListener("click", vbPass);
+  $("vbFail").addEventListener("click", vbFail);
+  $("vbUndo").addEventListener("click", vbUndo);
+  $("vbShuffle").addEventListener("click", vbShuffle);
+  $("vbCheck").addEventListener("click", vbCheck);
+  $("vbReveal").addEventListener("click", vbReveal);
+  $("vbExport").addEventListener("click", vbExport);
+  $("vbReset").addEventListener("click", vbReset);
+  $("vbAutoRun").addEventListener("change", (e)=> vbSetAuto(e.target.checked));
+  $("vbAutoMs").addEventListener("change", ()=> { if($("vbAutoRun").checked) vbSetAuto(true); });
+
+  // collapsible buttons (vocab)
+  document.querySelectorAll('[data-toggle="vbPool"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("vbPoolBody", btn));
+  });
+  document.querySelectorAll('[data-toggle="vbFails"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("vbFailsBody", btn));
+  });
+  document.querySelectorAll('[data-toggle="vbLog"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>togglePanel("vbLogBody", btn));
+  });
+
+  // ========= App reset =========
+  $("btnResetAll").addEventListener("click", ()=>{
+    const ok=confirm("Reset app sẽ xóa cả mục Số và Từ vựng (localStorage). Bạn chắc chứ?");
+    if(!ok) return;
+    localStorage.removeItem(LS_NUM);
+    localStorage.removeItem(LS_VB);
+    location.reload();
+  });
+
+  // ========= Keyboard shortcuts (context-aware) =========
+  window.addEventListener("keydown", (e)=>{
+    const tag=(e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    const isTyping = (tag==="input" || tag==="textarea" || tag==="select");
+
+    const onNumbers = !screens.numbers.classList.contains("hide");
+    const onVocab = !screens.vocab.classList.contains("hide");
+
+    // Ctrl/Cmd+Z for undo (even when not typing)
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="z"){
+      e.preventDefault();
+      if(onNumbers) numUndo();
+      if(onVocab) vbUndo();
+      return;
+    }
+
+    // If typing in vocab answer, Enter should check/pass conveniently
+    if(onVocab && tag==="input" && e.target.id==="vbAnswer"){
+      if(e.key==="Enter"){
+        e.preventDefault();
+        const ok = vbCheck();
+        // nếu đúng thì pass luôn (tiện học), nếu sai thì giữ để bạn bấm Fail
+        if(ok===true) vbPass();
+      }
+      return;
+    }
+
+    // avoid intercept while typing elsewhere
+    if(isTyping) return;
+
+    if(e.code==="Space"){
+      e.preventDefault();
+      if(onNumbers) numNext();
+      if(onVocab) vbNext();
+    } else if(e.code==="Enter"){
+      e.preventDefault();
+      if(onNumbers) numPass();
+      if(onVocab) vbPass();
+    } else if(e.key.toLowerCase()==="f"){
+      e.preventDefault();
+      if(onNumbers) numFail();
+      if(onVocab) vbFail();
+    }
+  });
+
+  // ========= Init =========
+  // default to home
+  showScreen("home");
+
+  // load states
+  numLoad();
+  vbLoad();
+
+  // keep all panels collapsed by default: we already set bodies as hide in HTML.
+  // render modules
+  numRender();
+  vbRender();
+})();
+</script>
+</body>
+</html>
+
